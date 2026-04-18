@@ -54,7 +54,7 @@ async function init() {
   bindFileEvents();
   bindButtonEvents();
   updateFontSizeDisplay();
-  syncPrintFooterColor();
+  syncPrintFooter();
   primeSqlJs();
 }
 
@@ -94,16 +94,20 @@ function selectTheme(key) {
   for (const tile of themeGrid.querySelectorAll('.theme-tile')) {
     tile.classList.toggle('is-active', tile.dataset.theme === key);
   }
-  syncPrintFooterColor();
+  syncPrintFooter();
   renderPreview();
 }
 
-function syncPrintFooterColor() {
+function syncPrintFooter() {
   // @page rules resolve CSS variables against :root, so the footer page
-  // number picks up whatever theme is currently selected.
+  // number picks up whatever theme / font is currently selected.
+  const root = document.documentElement.style;
   const theme = THEMES[state.themeKey];
   if (theme) {
-    document.documentElement.style.setProperty('--print-footer-color', theme.title_color);
+    root.setProperty('--print-footer-color', theme.title_color);
+  }
+  if (state.fontFamily) {
+    root.setProperty('--print-footer-font', `"${state.fontFamily}", sans-serif`);
   }
 }
 
@@ -132,6 +136,7 @@ async function initFontOptions() {
 
   fontSelect.addEventListener('change', () => {
     state.fontFamily = fontSelect.value;
+    syncPrintFooter();
     renderPreview();
   });
   fontSizeSlider.addEventListener('input', () => {
