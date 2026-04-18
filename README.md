@@ -3,7 +3,7 @@
 Anki `.apkg` 파일을 브라우저에서 바로 2단 A4 PDF로 변환합니다.
 파일은 업로드되지 않고 모든 처리가 브라우저에서 이루어집니다.
 
-**👉 [바로 사용하기](https://j-r-oppenheimer.github.io/Ankipress-Web/)**
+**👉 [바로 사용하기](https://j-r-oppenheimer.github.io/Ankipress_Web/)**
 
 ## 기능
 
