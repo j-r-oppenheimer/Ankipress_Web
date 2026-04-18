@@ -384,6 +384,21 @@ function bindButtonEvents() {
     } finally {
       hideLoading();
     }
+
+    // Chrome's "Save as PDF" uses document.title as the default filename.
+    // Use the top-level deck name (Anki's :: separators → _) so the file
+    // matches the title shown in the PDF header.
+    const originalTitle = document.title;
+    const firstDeck = state.deckGroups[0];
+    if (firstDeck && firstDeck.title) {
+      document.title = firstDeck.title.replace(/::/g, '_');
+    }
+    const restoreTitle = () => {
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', restoreTitle);
+    };
+    window.addEventListener('afterprint', restoreTitle);
+
     setTimeout(() => window.print(), 50);
   });
 
