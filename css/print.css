@@ -1,0 +1,156 @@
+/* Shared rules used by both on-screen preview and the print target. */
+
+.print-root *,
+.print-root *::before,
+.print-root *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.print-root {
+  column-count: 2;
+  column-gap: 7mm;
+  font-family: var(--font-family);
+  font-size: var(--font-size);
+  line-height: 1.5;
+  color: #333;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Force background colors to print even when "Print backgrounds" is off
+   (default on mobile Chrome, Samsung Internet, etc.). */
+.print-root,
+.print-root * {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+.print-root .deck-title {
+  column-span: all;
+  color: var(--title-color);
+  font-weight: bold;
+  font-size: var(--title-size);
+  margin: 12px 0 6px 0;
+  padding-bottom: 3px;
+  border-bottom: 2px solid var(--question-bg);
+}
+.print-root .deck-title:first-child { margin-top: 0; }
+
+.print-root .card {
+  break-inside: avoid;
+  margin-bottom: 8px;
+}
+
+.print-root .basic-question {
+  background: var(--question-bg);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.print-root .card-number {
+  font-weight: bold;
+  color: var(--title-color);
+  margin-right: 4px;
+}
+
+.print-root .basic-answer {
+  background: var(--answer-bg);
+  border: 1px solid var(--answer-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 4px;
+}
+
+.print-root .cloze-card {
+  background: var(--answer-bg);
+  border: 1px solid var(--answer-border);
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+
+.print-root .cloze-highlight {
+  background: var(--question-bg);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-weight: 600;
+}
+
+.print-root .card-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 4px 0;
+  display: block;
+}
+
+.print-root b, .print-root strong { font-weight: bold; }
+.print-root i, .print-root em { font-style: italic; }
+.print-root u { text-decoration: underline; }
+
+.print-root hr {
+  border: none;
+  border-top: 1px solid var(--answer-border);
+  margin: 8px 0;
+}
+
+.print-root table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 4px 0;
+  font-size: inherit;
+}
+.print-root th, .print-root td {
+  border: 1px solid var(--answer-border);
+  padding: 3px 5px;
+  text-align: left;
+}
+.print-root th { background: var(--question-bg); }
+
+.print-root ul, .print-root ol {
+  padding-left: 18px;
+  margin: 3px 0;
+}
+
+/* ── Screen: the dedicated print target is hidden. ── */
+#print-target { display: none; }
+
+/* ── Print: swap to the dedicated print target and let @page handle margins. ── */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm 10mm 14mm 10mm;
+
+    @bottom-center {
+      content: counter(page) " / " counter(pages);
+      color: var(--print-footer-color, #B5838D);
+      font-size: 10pt;
+      font-family: inherit;
+      vertical-align: top;
+      padding-top: 4mm;
+    }
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  /* Hide the entire app shell; the print target is the only thing visible. */
+  body > *:not(#print-target) { display: none !important; }
+
+  #print-target {
+    display: block !important;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #333;
+  }
+
+  #print-target > .print-root {
+    column-count: 2;
+    column-gap: 7mm;
+  }
+}

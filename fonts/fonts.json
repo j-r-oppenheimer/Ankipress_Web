@@ -1,0 +1,11 @@
+[
+  { "family": "Gowun Dodum v5",       "file": "GowunDodum-final_v5.ttf",        "label": "Gowun Dodum" },
+  { "family": "MaruBuri",             "file": "MaruBuri-Regular_original.ttf",  "label": "MaruBuri" },
+  { "family": "Ridibatang",           "file": "ridibatang.ttf",                 "label": "Ridibatang" },
+  { "family": "HU Neatwrt",           "file": "HUNeatwrt_K.ttf",                "label": "HU Neatwrt" },
+  { "family": "Aa You were the moon", "file": "AaYouwerethemoon_K.ttf",         "label": "Aa You were the moon" },
+  { "family": "Ba Glasses Light",     "file": "BaGlassesLight_K.ttf",           "label": "Ba Glasses Light" },
+  { "family": "TS Dream of Pluto",    "file": "TSdreamofpluto_4.ttf",           "label": "TS Dream of Pluto" },
+  { "family": "TYPE Skyblue",         "file": "TYPESkyblue_K.ttf",              "label": "TYPE Skyblue" },
+  { "family": "푸른전남B",            "file": "푸른전남B수정.ttf",              "label": "푸른전남 B" }
+]
