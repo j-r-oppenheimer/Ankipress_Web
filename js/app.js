@@ -386,12 +386,14 @@ function bindButtonEvents() {
     }
 
     // Chrome's "Save as PDF" uses document.title as the default filename.
-    // Use the top-level deck name (Anki's :: separators → _) so the file
-    // matches the title shown in the PDF header.
+    // The deck title uses " / " between path segments (apkg-parser converts
+    // Anki's "::" → " / " for display); collapse it to "_" without spaces so
+    // the saved file is "헤드_기출_1차" instead of "헤드 _ 기출 _ 1차" (Chrome
+    // turns "/" into "_" but leaves the surrounding spaces).
     const originalTitle = document.title;
     const firstDeck = state.deckGroups[0];
     if (firstDeck && firstDeck.title) {
-      document.title = firstDeck.title.replace(/::/g, '_');
+      document.title = firstDeck.title.replace(/\s*\/\s*/g, '_').replace(/::/g, '_');
     }
     const restoreTitle = () => {
       document.title = originalTitle;
