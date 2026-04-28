@@ -77,7 +77,9 @@
   background: var(--answer-bg);
   border: 1px solid var(--answer-border);
   border-radius: 8px;
-  padding: 7px 10px;
+  /* Extra right padding so a cloze-highlight that wraps to a new line keeps
+     a visible gap between its rightmost glyphs and the card border. */
+  padding: 7px 16px 7px 10px;
 }
 
 .print-root .cloze-highlight {
@@ -152,6 +154,11 @@
 
   /* Hide the entire app shell; the print target is the only thing visible. */
   body > *:not(#print-target) { display: none !important; }
+
+  /* In print every deck-title starts a new page, so its 12px screen-only top
+     margin would push subsequent decks lower than the first (which already
+     sits flush via :first-child). Drop that margin so all pages match. */
+  .print-root .deck-title { margin-top: 0; }
 
   #print-target {
     display: block !important;
