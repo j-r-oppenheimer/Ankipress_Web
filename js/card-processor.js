@@ -21,10 +21,8 @@ export async function processCards(cards, mediaHandler, includedFields = null, b
       if (hasCloze(firstVal)) effective = 'cloze';
     }
 
-    if (effective === 'cloze' || effective === 'image_occlusion') {
-      if (seenNotes.has(card.note_id)) continue;
-      seenNotes.add(card.note_id);
-    }
+    if (seenNotes.has(card.note_id)) continue;
+    seenNotes.add(card.note_id);
 
     const answerFieldNames = getAnswerFieldNames(card, includedFields);
 
