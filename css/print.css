@@ -77,9 +77,7 @@
   background: var(--answer-bg);
   border: 1px solid var(--answer-border);
   border-radius: 8px;
-  /* Extra right padding so a cloze-highlight that wraps to a new line keeps
-     a visible gap between its rightmost glyphs and the card border. */
-  padding: 7px 16px 7px 10px;
+  padding: 7px 10px;
 }
 
 .print-root .cloze-highlight {
@@ -87,6 +85,10 @@
   border-radius: 4px;
   padding: 1px 5px;
   font-weight: 600;
+  /* When a highlight wraps across lines, give each fragment its own padding
+     and rounded corners instead of slicing them off at the break point. */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .print-root .card-image {
