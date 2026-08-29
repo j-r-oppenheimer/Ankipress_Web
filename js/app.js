@@ -386,15 +386,13 @@ function bindButtonEvents() {
     }
 
     // Chrome's "Save as PDF" uses document.title as the default filename.
-    // The deck title uses " / " between path segments (apkg-parser converts
-    // Anki's "::" → " / " for display); collapse it to "_" without spaces so
-    // the saved file is "헤드_기출_1차" instead of "헤드 _ 기출 _ 1차" (Chrome
-    // turns "/" into "_" but leaves the surrounding spaces).
+    // Use the deck the whole export shares — the common "::" prefix of every
+    // group — so a parent deck with subdecks saves as the parent's name, not
+    // its first subdeck's. Segments are joined with "_" (Chrome turns "/" into
+    // "_" anyway, but leaves the surrounding spaces).
     const originalTitle = document.title;
-    const firstDeck = state.deckGroups[0];
-    if (firstDeck && firstDeck.title) {
-      document.title = firstDeck.title.replace(/\s*\/\s*/g, '_').replace(/::/g, '_');
-    }
+    const rootDeck = commonDeckPath(state.deckGroups.map(g => g.path || g.title.replace(/\s*\/\s*/g, '::')));
+    if (rootDeck) document.title = rootDeck.replace(/::/g, '_');
     const restoreTitle = () => {
       document.title = originalTitle;
       window.removeEventListener('afterprint', restoreTitle);
@@ -444,4 +442,21 @@ function showLoading(msg) {
 
 function hideLoading() {
   loadingOverlay.classList.remove('is-visible');
+}
+
+// Longest "::" path shared by every deck in the export. With a single deck it
+// is that deck; with a parent and its subdecks it is the parent; with unrelated
+// top-level decks nothing is shared, so fall back to the first deck's root.
+function commonDeckPath(paths) {
+  const list = paths.filter(Boolean);
+  if (!list.length) return '';
+  let common = list[0].split('::');
+  for (const p of list.slice(1)) {
+    const segs = p.split('::');
+    let i = 0;
+    while (i < common.length && i < segs.length && common[i] === segs[i]) i++;
+    common = common.slice(0, i);
+    if (!common.length) break;
+  }
+  return (common.length ? common : [list[0].split('::')[0]]).join('::');
 }

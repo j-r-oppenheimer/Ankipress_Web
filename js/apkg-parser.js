@@ -350,12 +350,25 @@ export class ApkgParser {
     for (const card of cards) {
       const key = card.deck_path;
       if (!groups.has(key)) {
-        groups.set(key, { title: key.replace(/::/g, ' / '), cards: [] });
+        groups.set(key, { path: key, title: key.replace(/::/g, ' / '), cards: [] });
       }
       groups.get(key).cards.push(card);
     }
-    return Array.from(groups.values());
+    // Anki lists decks by name, comparing each "::" segment in turn, so a
+    // parent always precedes its own children ("A" < "A::B" < "A2").
+    return Array.from(groups.values()).sort((a, b) => compareDeckPaths(a.path, b.path));
   }
+}
+
+// Compare two "::"-separated deck paths segment by segment, the way Anki
+// orders the deck list (locale-aware, digits compared as numbers).
+export function compareDeckPaths(a, b) {
+  const as = a.split('::'), bs = b.split('::');
+  for (let i = 0; i < Math.min(as.length, bs.length); i++) {
+    const c = as[i].localeCompare(bs[i], undefined, { numeric: true, sensitivity: 'base' });
+    if (c !== 0) return c;
+  }
+  return as.length - bs.length;
 }
 
 // ── MediaHandler (base64 URI conversion + mime guess) ────────────
