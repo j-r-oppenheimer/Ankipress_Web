@@ -128,7 +128,32 @@ function cleanHtml(html, mediaHandler) {
     img.classList.add('card-image');
   }
 
+  // Images render as blocks, so a <br> next to one adds a full empty line box
+  // (line-height 1.5) on top of the image's own margin - that's the oversized
+  // gap between stacked images, and between text and an image.
+  stripBrAroundImages(root);
+
   let out = root.innerHTML;
   out = out.replace(/<p>\s*<\/p>/g, '').replace(/<br\s*\/?>\s*$/i, '');
   return out.trim();
+}
+
+// Drop every <br> that sits directly before or after an image (ignoring
+// whitespace-only text nodes in between), plus any <br> run at the very start
+// or end of the field.
+function stripBrAroundImages(root) {
+  const isBlank = n => n.nodeType === 3 && !n.textContent.trim();
+  const isImg = n => n && n.nodeType === 1 && n.tagName === 'IMG';
+
+  const neighbour = (node, dir) => {
+    let n = node[dir];
+    while (n && isBlank(n)) n = n[dir];
+    return n;
+  };
+
+  for (const br of Array.from(root.querySelectorAll('br'))) {
+    const prev = neighbour(br, 'previousSibling');
+    const next = neighbour(br, 'nextSibling');
+    if (isImg(prev) || isImg(next) || !prev || !next) br.remove();
+  }
 }
