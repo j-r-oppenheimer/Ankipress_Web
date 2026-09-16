@@ -3,7 +3,7 @@
 Anki 덱(`.apkg`)을 인쇄용 **A4 2단 PDF**로 변환하는 웹 애플리케이션입니다.
 모든 처리는 브라우저 안에서 이루어지며, 파일은 어떤 서버로도 전송되지 않습니다.
 
-**[바로 사용하기 →](https://j-r-oppenheimer.github.io/Ankipress-Web/)**
+**[바로 사용하기 →](https://j-r-oppenheimer.github.io/Ankipress_Web/)**
 
 ---
 
@@ -13,7 +13,7 @@ Anki 덱(`.apkg`)을 인쇄용 **A4 2단 PDF**로 변환하는 웹 애플리케�
 |---|---|
 | 카드 유형 | Basic · Cloze · Image Occlusion |
 | 덱 포맷 | Anki 23.10+ (`collection.anki21b`, zstd·protobuf) 및 레거시 포맷 (`anki21`, `anki2`) |
-| 테마 | 컬러 테마 20종 + 일러스트 테마 3종 (체스 · 테니스 · 스벤) |
+| 테마 | 컬러 테마 20종 + 일러스트 테마 3종 |
 | 서식 | 답 필드 선택, 글꼴 선택, 글자 크기 조절 (7–14pt), 덱 제목 표시 여부 |
 | 레이아웃 | A4 2단 구성, 덱별 페이지 분리, 페이지 번호 |
 | 개인정보 | 업로드·저장 없음 — 100% 클라이언트 사이드 처리 |
