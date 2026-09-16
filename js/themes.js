@@ -1,5 +1,16 @@
 // Color theme definitions — ported and expanded from themes/color_themes.py
 // Each theme: { name (Korean), emoji, title_color, question_bg, answer_bg, answer_border }
+//
+// Optional fields (illustrated themes only — plain themes fall back safely):
+//   page_bg         full-page background behind the cards; omit for white
+//   highlight       cloze highlight + table header fill; defaults to question_bg
+//   icons           motifs for the page pattern, as icons/<path>.svg
+//   accent          small shape scattered in the gaps (a ball, a sparkle)
+//   title_icon      the one shown beside the deck title
+//   pattern         tile settings — see buildPatternSvg in js/icons.js:
+//                   layout ('scatter' | 'lattice'), size, icon, count,
+//                   accents, accentSize, angle, tilt, opacity, accentOpacity,
+//                   accentColor, dash
 
 export const THEMES = {
   rose:       { name: '장미',     emoji: '🌹', title_color: '#B5838D', question_bg: '#F5E6E0', answer_bg: '#FDF6F4', answer_border: '#E8D5D0' },
@@ -23,6 +34,50 @@ export const THEMES = {
   berry:      { name: '베리',     emoji: '🫐', title_color: '#6B6AA8', question_bg: '#DFDEF0', answer_bg: '#F1F0F9', answer_border: '#C7C6E0' },
   sunset:     { name: '노을',     emoji: '🌇', title_color: '#C7795D', question_bg: '#F5DDD0', answer_bg: '#FCEFE7', answer_border: '#E8C8B6' },
   cocoa:      { name: '코코아',   emoji: '🍫', title_color: '#8C6146', question_bg: '#E8D9CA', answer_bg: '#F6EEE4', answer_border: '#D6C2B0' },
+
+  // ── Illustrated themes: colored page, white cards, motif pattern ──
+  // Palettes follow the reference patterns rather than the muted house style:
+  // the motifs are meant to read as artwork, not as a faint watermark.
+  chess: {
+    name: '체스', emoji: '♟️',
+    icons: ['chess/pawn', 'chess/knight', 'chess/rook', 'chess/bishop', 'chess/queen', 'chess/king'],
+    title_icon: 'chess/queen',
+    title_color: '#3F3A34',
+    page_bg: '#EFEBE3', question_bg: '#FFFFFF', answer_bg: '#FFFFFF',
+    answer_border: '#DAD2C4', highlight: '#E3DBCB',
+    // Pieces stand upright on a staggered grid linked by dashes — the chess
+    // paper arrangement. rows must stay even or the grid seams every tile.
+    pattern: { layout: 'lattice', rows: 4, size: 230, icon: 28, dash: true,
+               dashWidth: 1, accents: 0,
+               color: '#4F4A44', accentColor: '#4F4A44',
+               opacity: 0.55, accentOpacity: 0.38 },
+  },
+  tennis: {
+    name: '테니스', emoji: '🎾',
+    icons: ['tennis/racket'],
+    accent: 'tennis/ball', title_icon: 'tennis/ball',
+    title_color: '#415A33',
+    page_bg: '#BDCFA6', question_bg: '#FFFFFF', answer_bg: '#FFFFFF',
+    answer_border: '#9DB287', highlight: '#DFE9CE',
+    pattern: { size: 235, icon: 50, count: 5, accents: 5, accentSize: 16,
+               angle: -25, tilt: 20,
+               iconColors: ['#FFFDF6'], accentColor: '#EFEC55',
+               opacity: 1, accentOpacity: 1 },
+  },
+  sven: {
+    name: '스벤', emoji: '🦌',
+    icons: ['sven/deer-a', 'sven/deer-b'],
+    accent: 'sven/star', title_icon: 'sven/deer-a',
+    title_color: '#2C3547',
+    page_bg: '#F3EBD9', question_bg: '#FFFFFF', answer_bg: '#FFFFFF',
+    answer_border: '#DACDB2', highlight: '#EADFC6',
+    // Deer stand on the ground, so barely any tilt — the variety comes from
+    // mirroring and from the sparkles between them.
+    pattern: { size: 320, icon: 54, count: 7, accents: 10, accentSize: 17,
+               angle: 0, tilt: 4,
+               color: '#2C3547', accentColor: '#2C3547',
+               opacity: 0.8, accentOpacity: 0.55 },
+  },
 };
 
 export const DEFAULT_THEME = 'rose';

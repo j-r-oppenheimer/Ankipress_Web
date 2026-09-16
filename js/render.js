@@ -1,3 +1,5 @@
+import { tint } from './icons.js';
+
 // Build the print-ready HTML (equivalent to templates/layout.html).
 // The output is injected into the .preview container; native window.print()
 // turns it into the final PDF with the @page rules in css/print.css.
@@ -12,6 +14,9 @@ export function buildPrintHtml(deckGroups, theme, opts = {}) {
   const fontFamily = opts.fontFamily || 'Gowun Dodum';
   const fontSize = opts.fontSize || 9;
   const showDeckTitle = opts.showDeckTitle !== false;
+  const iconSvg = opts.iconSvg || null;      // deck-title mark
+  const patternSvgs = opts.patternSvgs || [];
+  const accentSvg = opts.accentSvg || null;
 
   // CSS custom properties let one sheet serve all themes.
   // Use single quotes inside the CSS value so they don't collide with the
@@ -25,13 +30,28 @@ export function buildPrintHtml(deckGroups, theme, opts = {}) {
     `--font-family: '${fontFamily}', 'Malgun Gothic', '맑은 고딕', sans-serif`,
     `--font-size: ${fontSize}pt`,
     `--title-size: ${fontSize + 3}pt`,
-  ].join('; ');
+    // Themes without these fall back to the old white-page look.
+    `--page-bg: ${theme.page_bg || 'transparent'}`,
+    `--highlight: ${theme.highlight || theme.question_bg}`,
+  ];
 
-  const parts = [`<div class="print-root" style="${cssVars}">`];
+
+  const cssVarText = cssVars.join('; ');
+
+  const deckIcon = iconSvg
+    ? `<span class="deck-icon">${tint(iconSvg, theme.title_color)}</span>`
+    : '';
+
+  const parts = [`<div class="print-root" style="${cssVarText}">`];
+  // Filled in by app.js once the block has been laid out and its height is
+  // known — see paintPatternLayer.
+  if (patternSvgs.length && theme.pattern) {
+    parts.push('<svg class="page-pattern" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>');
+  }
   for (const group of deckGroups) {
     if (!group.cards || !group.cards.length) continue;
     if (showDeckTitle) {
-      parts.push(`<div class="deck-title">${escapeText(group.title)}</div>`);
+      parts.push(`<div class="deck-title">${deckIcon}${escapeText(group.title)}</div>`);
     }
     for (const card of group.cards) {
       parts.push(renderCard(card));

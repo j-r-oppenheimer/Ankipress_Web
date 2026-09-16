@@ -5,6 +5,7 @@ import { THEMES, DEFAULT_THEME } from './themes.js';
 import { ApkgParser, MediaHandler } from './apkg-parser.js';
 import { processCards } from './card-processor.js';
 import { buildPrintHtml } from './render.js';
+import { loadIcon, loadIcons, paintPatternLayer } from './icons.js';
 
 // ── Global state ────────────────────────────────────────────────
 const state = {
@@ -76,7 +77,7 @@ function initThemeGrid() {
     tile.dataset.theme = key;
     tile.innerHTML = `
       <div class="theme-swatch" style="
-        background: ${theme.question_bg};
+        background: ${theme.page_bg || theme.question_bg};
         border: 1.5px solid ${theme.answer_border};
       ">
         <span class="theme-emoji">${theme.emoji}</span>
@@ -108,6 +109,44 @@ function syncPrintFooter() {
   }
   if (state.fontFamily) {
     root.setProperty('--print-footer-font', `"${state.fontFamily}", sans-serif`);
+  }
+}
+
+// The flat page tint rides on <html>, whose background propagates to the page
+// canvas and so covers every sheet, including the tail of a short last page.
+// The motifs are a separate vector layer inside .print-root (see
+// paintPatternLayer) — a background-image would print rasterised.
+function syncPageCanvas(theme) {
+  document.documentElement.style.setProperty('--page-bg', theme.page_bg || '#fff');
+}
+
+// Stamp the pattern across both rendered copies. Has to run after layout —
+// the tile grid is sized from the block's real width and height.
+function paintPatterns(theme, patternSvgs, accentSvg) {
+  if (!theme.pattern) return;
+  const cfg = { color: theme.answer_border, seed: theme.name, accentSvg, ...theme.pattern };
+  const layerOf = host => host?.querySelector('.print-root > .page-pattern');
+
+  const previewRoot = preview.querySelector('.print-root');
+  const previewLayer = layerOf(preview);
+  if (previewRoot && previewLayer) {
+    paintPatternLayer(previewLayer, patternSvgs, cfg,
+      previewRoot.clientWidth, previewRoot.scrollHeight);
+  }
+
+  // #print-target is display:none on screen, so it can't be measured. Its
+  // width is known from the @page rules (A4 less the 10mm side margins) and
+  // its height is estimated from the preview, scaled by the width ratio and
+  // then padded generously — stamps that fall past the block are clipped, so
+  // overshooting costs a few unused <use> elements and undershooting would
+  // leave bare paper.
+  const printLayer = layerOf(printTarget);
+  if (printLayer) {
+    const PRINT_WIDTH = 718;   // 190mm at 96dpi
+    const height = previewRoot && previewRoot.clientWidth
+      ? previewRoot.scrollHeight * (previewRoot.clientWidth / PRINT_WIDTH) * 1.4 + 2000
+      : 12000;
+    paintPatternLayer(printLayer, patternSvgs, cfg, PRINT_WIDTH, height);
   }
 }
 
@@ -349,16 +388,28 @@ async function doRenderPreview() {
     }
   }
 
+  const [iconSvg, patternSvgs, accentSvg] = await Promise.all([
+    loadIcon(theme.title_icon),
+    loadIcons(theme.icons || []),
+    loadIcon(theme.accent),
+  ]);
+  syncPageCanvas(theme);
+
   const html = buildPrintHtml(processedGroups, theme, {
     fontFamily: state.fontFamily,
     fontSize: state.fontSize,
     showDeckTitle: state.showDeckTitle,
+    iconSvg,
+    patternSvgs,
+    accentSvg,
   });
 
   preview.innerHTML = html;
   // Mirror into the print target so the PDF uses page-level CSS, not the
   // scrollable preview container's CSS.
   printTarget.innerHTML = html;
+
+  paintPatterns(theme, patternSvgs, accentSvg);
 }
 
 // ── Buttons ─────────────────────────────────────────────────────
