@@ -163,9 +163,10 @@ export function buildPatternLayerMarkup(iconSvgs, cfg = {}, width, height) {
   if (!list.length || !width || !height) return '';
   const sprites = list.map(dissect).filter(Boolean);
   if (!sprites.length) return '';
-  const accentSprite = accentSvg
-    ? dissect(accentSvg.replaceAll('currentColor', accentColor || color))
-    : null;
+  // One accent or several; each gap picks one at random.
+  const accentSprites = (Array.isArray(accentSvg) ? accentSvg : [accentSvg]).filter(Boolean)
+    .map(svg => dissect(svg.replaceAll('currentColor', accentColor || color)))
+    .filter(Boolean);
 
   const W = Math.ceil(width), H = Math.ceil(height + overrun);
   const rand = rng(hash(seed) >>> 0);
@@ -223,10 +224,14 @@ export function buildPatternLayerMarkup(iconSvgs, cfg = {}, width, height) {
     // `size` and `count` describe one notional tile's worth of motifs; that
     // becomes a minimum spacing for the sampler.
     const spacing = (size / Math.sqrt(Math.max(1, count))) * 0.92;
-    const pts = poisson(W, H, spacing, rand, 6000);
+    // Sample a band past every edge and shift back, so motifs straddle the
+    // paper edge and get cut off there instead of the edges thinning out.
+    const bleed = Math.ceil(icon * 0.6);
+    const SW = W + 2 * bleed, SH = H + 2 * bleed;
+    const pts = poisson(SW, SH, spacing, rand, 12000);
     for (const [cx, cy] of pts) {
       const key = Math.floor(rand() * sprites.length);
-      place(sprites[key], key, cx, cy, icon * (0.85 + rand() * 0.3),
+      place(sprites[key], key, cx - bleed, cy - bleed, icon * (0.85 + rand() * 0.3),
             angle + (rand() - 0.5) * 2 * tilt, flip && rand() < 0.5, motifs);
     }
 
@@ -235,7 +240,7 @@ export function buildPatternLayerMarkup(iconSvgs, cfg = {}, width, height) {
       const clear = icon * 0.5 + accentSize * 0.55;
       // Index the motifs so the clearance test stays cheap.
       const cell = Math.max(spacing, clear);
-      const gw = Math.ceil(W / cell), gh = Math.ceil(H / cell);
+      const gw = Math.ceil(SW / cell), gh = Math.ceil(SH / cell);
       const buckets = Array.from({ length: gw * gh }, () => []);
       for (const [x, y] of pts) {
         buckets[Math.min(gh - 1, Math.floor(y / cell)) * gw + Math.min(gw - 1, Math.floor(x / cell))].push([x, y]);
@@ -251,10 +256,14 @@ export function buildPatternLayerMarkup(iconSvgs, cfg = {}, width, height) {
         }
         return true;
       };
-      for (const [cx, cy] of poisson(W, H, aSpacing, rand, 8000)) {
-        if (!free(cx, cy)) continue;
+      for (const [sx, sy] of poisson(SW, SH, aSpacing, rand, 16000)) {
+        if (!free(sx, sy)) continue;
+        const cx = sx - bleed, cy = sy - bleed;
         const px = accentSize * (0.8 + rand() * 0.4);
-        if (accentSprite) place(accentSprite, 'a', cx, cy, px, rand() * 360, false, accentUses);
+        if (accentSprites.length) {
+          const k = Math.floor(rand() * accentSprites.length);
+          place(accentSprites[k], `a${k}`, cx, cy, px, rand() * 360, false, accentUses);
+        }
         else accentUses.push(`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${(px / 4).toFixed(2)}"/>`);
       }
     }

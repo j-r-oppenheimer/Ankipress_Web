@@ -498,10 +498,13 @@ input[type="range"] {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  padding: 24px;
+  /* The inset lives on .print-root instead, so the page tint and pattern
+     reach the preview's edges the way they reach the paper's. */
+  padding: 0;
   max-height: 70vh;
   overflow-y: auto;
 }
+#preview > .print-root { padding: 24px; }
 #preview:empty::before {
   content: "파일을 업로드하면 미리보기가 표시됩니다.";
   display: block;

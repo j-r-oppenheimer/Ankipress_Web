@@ -135,14 +135,14 @@ function paintPatterns(theme, patternSvgs, accentSvg) {
   }
 
   // #print-target is display:none on screen, so it can't be measured. Its
-  // width is known from the @page rules (A4 less the 10mm side margins) and
+  // width is known from the @page rules (zero margin, so the full A4 width) and
   // its height is estimated from the preview, scaled by the width ratio and
   // then padded generously — stamps that fall past the block are clipped, so
   // overshooting costs a few unused <use> elements and undershooting would
   // leave bare paper.
   const printLayer = layerOf(printTarget);
   if (printLayer) {
-    const PRINT_WIDTH = 718;   // 190mm at 96dpi
+    const PRINT_WIDTH = 794;   // 210mm at 96dpi
     const height = previewRoot && previewRoot.clientWidth
       ? previewRoot.scrollHeight * (previewRoot.clientWidth / PRINT_WIDTH) * 1.4 + 2000
       : 12000;
@@ -391,7 +391,7 @@ async function doRenderPreview() {
   const [iconSvg, patternSvgs, accentSvg] = await Promise.all([
     loadIcon(theme.title_icon),
     loadIcons(theme.icons || []),
-    loadIcon(theme.accent),
+    Array.isArray(theme.accent) ? loadIcons(theme.accent) : loadIcon(theme.accent),
   ]);
   syncPageCanvas(theme);
 

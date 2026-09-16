@@ -5,7 +5,8 @@
 //   page_bg         full-page background behind the cards; omit for white
 //   highlight       cloze highlight + table header fill; defaults to question_bg
 //   icons           motifs for the page pattern, as icons/<path>.svg
-//   accent          small shape scattered in the gaps (a ball, a sparkle)
+//   accent          small shape scattered in the gaps (a ball, a snowflake);
+//                   an array mixes several
 //   title_icon      the one shown beside the deck title
 //   pattern         tile settings — see buildPatternSvg in js/icons.js:
 //                   layout ('scatter' | 'lattice'), size, icon, count,
@@ -43,7 +44,7 @@ export const THEMES = {
     icons: ['chess/pawn', 'chess/knight', 'chess/rook', 'chess/bishop', 'chess/queen', 'chess/king'],
     title_icon: 'chess/queen',
     title_color: '#3F3A34',
-    page_bg: '#EFEBE3', question_bg: '#FFFFFF', answer_bg: '#FFFFFF',
+    page_bg: '#EFEBE3', question_bg: '#F7F4EE', answer_bg: '#FFFFFF',
     answer_border: '#DAD2C4', highlight: '#E3DBCB',
     // Pieces stand upright on a staggered grid linked by dashes — the chess
     // paper arrangement. rows must stay even or the grid seams every tile.
@@ -57,7 +58,7 @@ export const THEMES = {
     icons: ['tennis/racket'],
     accent: 'tennis/ball', title_icon: 'tennis/ball',
     title_color: '#415A33',
-    page_bg: '#BDCFA6', question_bg: '#FFFFFF', answer_bg: '#FFFFFF',
+    page_bg: '#BDCFA6', question_bg: '#F1F6EA', answer_bg: '#FFFFFF',
     answer_border: '#9DB287', highlight: '#DFE9CE',
     pattern: { size: 235, icon: 50, count: 5, accents: 5, accentSize: 16,
                angle: -25, tilt: 20,
@@ -67,16 +68,16 @@ export const THEMES = {
   sven: {
     name: '스벤', emoji: '🦌',
     icons: ['sven/deer-a', 'sven/deer-b'],
-    accent: 'sven/star', title_icon: 'sven/deer-a',
+    accent: 'sven/snowflake', title_icon: 'sven/deer-a',
     title_color: '#2C3547',
-    page_bg: '#F3EBD9', question_bg: '#FFFFFF', answer_bg: '#FFFFFF',
+    page_bg: '#F3EBD9', question_bg: '#FAF6ED', answer_bg: '#FFFFFF',
     answer_border: '#DACDB2', highlight: '#EADFC6',
     // Deer stand on the ground, so barely any tilt — the variety comes from
-    // mirroring and from the sparkles between them.
-    pattern: { size: 320, icon: 54, count: 7, accents: 10, accentSize: 17,
+    // mirroring and from the snowflakes between them.
+    pattern: { size: 320, icon: 54, count: 8, accents: 8, accentSize: 22,
                angle: 0, tilt: 4,
-               color: '#2C3547', accentColor: '#2C3547',
-               opacity: 0.8, accentOpacity: 0.55 },
+               color: '#4A5366', accentColor: '#4A5366',
+               opacity: 0.42, accentOpacity: 0.32 },
   },
 };
 
