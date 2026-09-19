@@ -42,7 +42,10 @@ export function buildPrintHtml(deckGroups, theme, opts = {}) {
     ? `<span class="deck-icon">${tint(iconSvg, theme.title_color)}</span>`
     : '';
 
-  const parts = [`<div class="print-root" style="${cssVarText}">`];
+  // Illustrated themes get their own card outlines and page setup; plain
+  // themes keep the original look (css/print.css).
+  const rootClass = theme.page_bg ? 'print-root is-illustrated' : 'print-root';
+  const parts = [`<div class="${rootClass}" style="${cssVarText}">`];
   // Filled in by app.js once the block has been laid out and its height is
   // known — see paintPatternLayer.
   if (patternSvgs.length && theme.pattern) {

@@ -57,6 +57,9 @@ async function init() {
   updateFontSizeDisplay();
   syncPrintFooter();
   primeSqlJs();
+  // Recount right before printing: web fonts may have finished loading since
+  // the preview was built, and Ctrl+P skips the print button's own refresh.
+  window.addEventListener('beforeprint', paintPageNumbers);
 }
 
 function primeSqlJs() {
@@ -118,6 +121,32 @@ function syncPrintFooter() {
 // paintPatternLayer) — a background-image would print rasterised.
 function syncPageCanvas(theme) {
   document.documentElement.style.setProperty('--page-bg', theme.page_bg || '#fff');
+  syncPageSetup(theme);
+}
+
+// The zero-margin page setup for illustrated themes. @page rules can't be
+// scoped to a class, so css/print.css holds the plain setup and this override
+// is swapped in while an illustrated theme is selected. It comes after
+// print.css in the document, so it wins.
+// Chrome draws no margin boxes on a zero margin, so the page numbers come from
+// paintPageNumbers instead; content: none keeps a browser that does draw them
+// from printing a second set.
+const ILLUSTRATED_PAGE_CSS = `@media print {
+  @page {
+    margin: 0;
+    @bottom-center { content: none; }
+  }
+}`;
+let pageSetupStyle = null;
+
+function syncPageSetup(theme) {
+  if (!pageSetupStyle) {
+    pageSetupStyle = document.createElement('style');
+    pageSetupStyle.id = 'illustrated-page-setup';
+    document.head.appendChild(pageSetupStyle);
+  }
+  pageSetupStyle.textContent = theme.page_bg ? ILLUSTRATED_PAGE_CSS : '';
+  document.documentElement.classList.toggle('illustrated-page', !!theme.page_bg);
 }
 
 // Stamp the pattern across both rendered copies. Has to run after layout —
@@ -148,6 +177,69 @@ function paintPatterns(theme, patternSvgs, accentSvg) {
       : 12000;
     paintPatternLayer(printLayer, patternSvgs, cfg, PRINT_WIDTH, height);
   }
+}
+
+// Page numbers for illustrated themes. The zero @page margin leaves Chrome no
+// room for the @bottom-center footer, so the numbers are stamped into the print
+// copy's pattern layer instead: one label per page, at the foot of each A4
+// slot. The layer is a single SVG, so the labels ride across page breaks the
+// same way the motifs do, above the motifs and below the cards.
+const PRINT_PAGE_HEIGHT = 1123;   // A4 page stride in CSS px, as Chrome paginates it
+
+function paintPageNumbers() {
+  const theme = THEMES[state.themeKey];
+  const root = printTarget.querySelector('.print-root');
+  const layer = root?.querySelector(':scope > .page-pattern');
+  if (!layer) return;
+  layer.querySelector('.page-numbers')?.remove();
+  if (!theme?.page_bg) return;
+
+  const total = countPrintPages(root);
+  const labels = [];
+  for (let n = 1; n <= total; n++) {
+    labels.push(`<text x="50%" y="${n * PRINT_PAGE_HEIGHT - 30}">${n} / ${total}</text>`);
+  }
+  layer.insertAdjacentHTML('beforeend',
+    '<g class="page-numbers" text-anchor="middle" style="font-size: 10pt; ' +
+    'font-family: var(--print-footer-font, sans-serif); fill: var(--print-footer-color)">' +
+    `${labels.join('')}</g>`);
+}
+
+// The printed page count, found by replaying the illustrated print layout on
+// screen: a box of A4-wide, A4-tall columns stands in for the pages, and the
+// print block laid out inside it fragments the same way it does on paper. One
+// deck at a time, since every deck title starts a new page. The print copy
+// itself can't be measured (display: none on screen).
+function countPrintPages(printRoot) {
+  const decks = [];
+  for (const el of printRoot.children) {
+    if (el.classList.contains('page-pattern')) continue;
+    if (el.classList.contains('deck-title') || !decks.length) decks.push([]);
+    decks[decks.length - 1].push(el);
+  }
+
+  const host = document.createElement('div');
+  host.style.cssText = 'position: absolute; left: -100000px; top: 0; visibility: hidden';
+  document.body.appendChild(host);
+  let total = 0;
+  for (const deck of decks) {
+    const pages = document.createElement('div');
+    pages.style.cssText = 'width: 210mm; height: 297mm; column-width: 210mm; ' +
+      'column-gap: 0; column-fill: auto';
+    // Mirrors #print-target > .print-root.is-illustrated in css/print.css.
+    const block = printRoot.cloneNode(false);
+    block.style.cssText += '; column-count: 2; column-gap: 7mm; margin: 0; ' +
+      'padding: 10mm 10mm 14mm 10mm; box-decoration-break: clone; -webkit-box-decoration-break: clone';
+    for (const el of deck) block.appendChild(el.cloneNode(true));
+    const title = block.querySelector('.deck-title');
+    if (title) title.style.marginTop = '0';
+    pages.appendChild(block);
+    host.appendChild(pages);
+    // One client rect per page-column the block spans.
+    total += new Set([...block.getClientRects()].map(r => Math.round(r.left))).size;
+  }
+  host.remove();
+  return total;
 }
 
 // ── Font options ────────────────────────────────────────────────
@@ -410,6 +502,7 @@ async function doRenderPreview() {
   printTarget.innerHTML = html;
 
   paintPatterns(theme, patternSvgs, accentSvg);
+  paintPageNumbers();
 }
 
 // ── Buttons ─────────────────────────────────────────────────────

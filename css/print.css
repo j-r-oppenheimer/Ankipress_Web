@@ -17,7 +17,12 @@
   color: #333;
   orphans: 2;
   widows: 2;
+}
 
+/* ── Illustrated themes: render.js adds .is-illustrated when the theme has a
+   page_bg. Plain themes keep the look and page setup they had before the
+   illustrated themes were added. ── */
+.print-root.is-illustrated {
   /* The tint is painted by the pattern layer's backdrop rect, not here: the
      layer sits at z-index -1, so a background on this block would hide it.
      In print the same color also goes on <html>, whose background propagates
@@ -65,12 +70,13 @@
   font-size: var(--title-size);
   margin: 12px 0 6px 0;
   padding-bottom: 3px;
-  /* Was --question-bg, which is near-white on illustrated themes. */
-  border-bottom: 2px solid var(--answer-border);
+  border-bottom: 2px solid var(--question-bg);
   /* Each new deck starts on its own page (no effect on screen). */
   break-before: page;
   page-break-before: always;
 }
+/* --question-bg is near-white on illustrated themes. */
+.print-root.is-illustrated .deck-title { border-bottom-color: var(--answer-border); }
 .print-root .deck-icon {
   /* Width follows the artwork rather than being forced square — a tall narrow
      mark like the queen would otherwise leave a gap before the title. */
@@ -99,10 +105,11 @@
   /* background-color, not the background shorthand: the shorthand would
      reset background-image and wipe out the page pattern underneath. */
   background-color: var(--question-bg);
-  border: 1px solid var(--answer-border);
   border-radius: 8px;
   padding: 7px 10px;
 }
+/* White cards on a tinted page need an outline; plain themes never had one. */
+.print-root.is-illustrated .basic-question { border: 1px solid var(--answer-border); }
 
 .print-root .card-number {
   font-weight: bold;
@@ -181,14 +188,14 @@
 
 /* ── Print: swap to the dedicated print target and let @page handle margins. ── */
 @media print {
-  /* Zero margin so the tint and the pattern reach the paper edge. The text
-     inset comes back as padding on .print-root with box-decoration-break:
-     clone, which repeats it on every page fragment — plain padding lands only
-     on the first and last page and leaves the middle pages' cards flush
-     against the paper edge. */
+  /* Plain themes: the original page setup — margins on all sides, page
+     number in the bottom margin. Illustrated themes swap in a zero-margin
+     setup so the tint and the pattern reach the paper edge; @page can't be
+     scoped to a class, so app.js injects that override (ILLUSTRATED_PAGE_CSS)
+     while an illustrated theme is selected. */
   @page {
     size: A4;
-    margin: 0;
+    margin: 10mm 10mm 14mm 10mm;
 
     @bottom-center {
       content: counter(page) " / " counter(pages);
@@ -197,11 +204,8 @@
       /* @page boxes don't inherit from the document, so the selected font is
          plumbed in via a CSS variable updated whenever the user picks one. */
       font-family: var(--print-footer-font, sans-serif);
-      /* With a zero page margin the box has no height and the number would sit
-         half off the sheet. Pinning it to the bottom and opening up the line
-         box lifts it about 8mm, into the block's own bottom padding. */
-      vertical-align: bottom;
-      line-height: 5.6;
+      vertical-align: top;
+      padding-top: 4mm;
     }
   }
 
@@ -223,10 +227,11 @@
     print-color-adjust: exact !important;
   }
 
+  /* Plain themes: white, as before the illustrated themes. */
   body {
     margin: 0;
     padding: 0;
-    background: transparent;
+    background: #fff;
   }
 
   /* Hide the entire app shell; the print target is the only thing visible. */
@@ -241,9 +246,14 @@
     display: block !important;
     margin: 0;
     padding: 0;
-    background: transparent;
+    background: #fff;
     color: #333;
   }
+
+  /* Illustrated themes (app.js sets html.illustrated-page): the canvas on
+     <html> carries the tint, so nothing above it may paint white. */
+  html.illustrated-page body,
+  html.illustrated-page #print-target { background: transparent; }
 
   /* In print the overrun is wanted: the painter stamps an extra page of tiles
      below the block so the tail of a short last page stays covered. Making the
@@ -253,6 +263,13 @@
   #print-target > .print-root {
     column-count: 2;
     column-gap: 7mm;
+  }
+
+  /* Zero @page margin on illustrated themes: the inset comes back as padding
+     with box-decoration-break: clone, which repeats it on every page fragment —
+     plain padding lands only on the first and last page and leaves the middle
+     pages' cards flush against the paper edge. */
+  #print-target > .print-root.is-illustrated {
     /* The former @page margins, repeated on every page fragment. */
     padding: 10mm 10mm 14mm 10mm;
     -webkit-box-decoration-break: clone;
